@@ -117,12 +117,12 @@ export default function Page() {
             <span className="text-[21px] font-semibold tracking-[-0.04em]">aucvia<span className="text-[#8a9f37]">.</span></span>
           </a>
           <nav className="hidden items-center gap-8 text-sm font-medium text-[#5d695f] md:flex">
-            <a className="text-[#183c29]" href="#auctions">Browse auctions</a><a href="#games">PS5 & games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a>
+            <a className="text-[#183c29]" href="#auctions">Browse auctions</a><a href="/games">PS5 & games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a>
           </nav>
           <div className="hidden items-center gap-3 md:flex"><Button variant="ghost" onClick={() => setAuthMode('sign-in')} className="text-[#506056]">Sign in</Button><Button onClick={() => setAuthMode('create')} className="rounded-full bg-[#183c29] px-5 text-white hover:bg-[#28563b]">Create account</Button></div>
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">{mobileOpen ? <X /> : <Menu />}</Button>
         </div>
-        {mobileOpen && <nav className="flex flex-col gap-4 border-t border-[#e5ebe5] px-5 py-5 text-sm font-medium md:hidden"><a href="#auctions">Browse auctions</a><a href="#games">PS5 & games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a><Button onClick={() => setAuthMode('create')} className="rounded-full bg-[#d9f17e] text-[#183c29] hover:bg-[#c9e466]">Create account</Button></nav>}
+        {mobileOpen && <nav className="flex flex-col gap-4 border-t border-[#e5ebe5] px-5 py-5 text-sm font-medium md:hidden"><a href="#auctions">Browse auctions</a><a href="/games">PS5 & games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a><Button onClick={() => setAuthMode('create')} className="rounded-full bg-[#d9f17e] text-[#183c29] hover:bg-[#c9e466]">Create account</Button></nav>}
       </header>
 
       <section id="top" className="mx-auto grid max-w-[1240px] gap-12 px-5 pb-20 pt-16 lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:px-8 lg:pb-28 lg:pt-24">
