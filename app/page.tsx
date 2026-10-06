@@ -117,7 +117,7 @@ export default function Page() {
             <span className="text-[21px] font-semibold tracking-[-0.04em]">aucvia<span className="text-[#8a9f37]">.</span></span>
           </a>
           <nav className="hidden items-center gap-8 text-sm font-medium text-[#5d695f] md:flex">
-            <a className="text-[#183c29]" href="#auctions">Browse auctions</a><a href="/games">PS5 & games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a>
+            <a className="text-[#183c29]" href="#auctions">Browse auctions</a><a href="/games">PS5 & Games</a><a href="#how-it-works">How it works</a><a href="#support">Customer support</a>
           </nav>
           <div className="hidden items-center gap-3 md:flex"><Button variant="ghost" onClick={() => setAuthMode('sign-in')} className="text-[#506056]">Sign in</Button><Button onClick={() => setAuthMode('create')} className="rounded-full bg-[#183c29] px-5 text-white hover:bg-[#28563b]">Create account</Button></div>
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">{mobileOpen ? <X /> : <Menu />}</Button>
