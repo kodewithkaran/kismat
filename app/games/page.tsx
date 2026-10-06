@@ -24,7 +24,7 @@ export default function GamesPage() {
       <header className="border-b border-[#e5ebe5] bg-[#f8f9f7]">
         <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between px-5 lg:px-8">
           <a href="/" className="flex items-center gap-3" aria-label="Aucvia home"><span className="flex size-10 items-center justify-center rounded-xl bg-[#183c29] text-[#d9f17e]"><Gavel className="size-5" /></span><span className="text-[21px] font-semibold tracking-[-0.04em]">aucvia<span className="text-[#8a9f37]">.</span></span></a>
-          <nav className="hidden items-center gap-8 text-sm font-medium text-[#5d695f] md:flex"><a href="/">Properties</a><a className="text-[#183c29]" href="/games">PS5 & games</a><a href="/#how-it-works">How it works</a><a href="/#support">Support</a></nav>
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#5d695f] md:flex"><a href="/">Properties</a><a className="text-[#183c29]" href="/games">PS5 & Games</a><a href="/#how-it-works">How it works</a><a href="/#support">Support</a></nav>
           <div className="flex items-center gap-3"><Button variant="ghost" onClick={() => setAuthOpen(true)} className="hidden text-[#506056] sm:inline-flex">Sign in</Button><Button onClick={() => setAuthOpen(true)} className="rounded-full bg-[#183c29] px-5 text-white hover:bg-[#28563b]">Create account</Button></div>
         </div>
       </header>
