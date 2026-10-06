@@ -89,6 +89,12 @@ export default function Page() {
   const [search, setSearch] = useState('')
   const [joined, setJoined] = useState(false)
   const [authMode, setAuthMode] = useState<'sign-in' | 'create' | null>(null)
+  const [authStep, setAuthStep] = useState<'options' | 'otp'>('options')
+  const [otpIdentifier, setOtpIdentifier] = useState('')
+  const [otp, setOtp] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpBusy, setOtpBusy] = useState(false)
+  const [otpMessage, setOtpMessage] = useState('')
   const [supportOpen, setSupportOpen] = useState(false)
   const [supportSent, setSupportSent] = useState(false)
   const [gameSearch, setGameSearch] = useState('')
@@ -104,6 +110,45 @@ export default function Page() {
     const matchesCategory = gameCategory === 'All items' || item.category === gameCategory
     return matchesSearch && matchesCategory
   }), [gameSearch, gameCategory])
+
+  const startOtp = () => {
+    setAuthStep('otp')
+    setOtpSent(false)
+    setOtp('')
+    setOtpMessage('')
+  }
+
+  const sendOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setOtpBusy(true)
+    setOtpMessage('')
+    const isPhone = otpIdentifier.trim().startsWith('+')
+    const response = await fetch('/api/auth/otp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(isPhone ? { phone: otpIdentifier.trim() } : { email: otpIdentifier.trim() }),
+    })
+    const result = await response.json()
+    setOtpBusy(false)
+    setOtpSent(response.ok)
+    setOtpMessage(result.message ?? result.error ?? 'Unable to send OTP.')
+  }
+
+  const verifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setOtpBusy(true)
+    setOtpMessage('')
+    const isPhone = otpIdentifier.trim().startsWith('+')
+    const response = await fetch('/api/auth/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(isPhone ? { phone: otpIdentifier.trim(), token: otp, type: 'phone' } : { email: otpIdentifier.trim(), token: otp, type: 'email' }),
+    })
+    const result = await response.json()
+    setOtpBusy(false)
+    setOtpMessage(response.ok ? 'Verified successfully. You can continue.' : result.error ?? 'Verification failed.')
+    if (response.ok) setAuthMode(null)
+  }
 
   return (
     <main className="min-h-screen bg-[#f8f9f7] text-[#17221d]">
@@ -150,7 +195,9 @@ export default function Page() {
 
       {supportOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102016]/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-label="Contact support"><div className="w-full max-w-lg rounded-3xl bg-[#f8f9f7] p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#80953d]">Customer support</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[#183c29]">How can we help?</h2><p className="mt-2 text-sm leading-6 text-[#6a766d]">Send us a message and our support team will get back to you within one business day.</p></div><Button variant="ghost" size="icon" onClick={() => setSupportOpen(false)} aria-label="Close support dialog"><X /></Button></div>{supportSent ? <div className="mt-7 rounded-2xl bg-[#eff5ef] p-5 text-sm leading-6 text-[#34523c]" role="status"><p className="font-semibold text-[#183c29]">Message received.</p><p className="mt-1">Thanks for reaching out. We&apos;ll follow up shortly.</p><Button onClick={() => setSupportOpen(false)} className="mt-5 rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">Done</Button></div> : <form className="mt-7 grid gap-4" onSubmit={(event) => { event.preventDefault(); setSupportSent(true) }}><label className="grid gap-1.5 text-sm font-medium text-[#34523c]">Your email<input required type="email" placeholder="you@example.com" className="h-11 rounded-xl border border-[#cfdacf] bg-white px-3 font-normal outline-none focus:border-[#78904d]" /></label><label className="grid gap-1.5 text-sm font-medium text-[#34523c]">What do you need help with?<select required defaultValue="" className="h-11 rounded-xl border border-[#cfdacf] bg-white px-3 font-normal outline-none focus:border-[#78904d]"><option value="" disabled>Select a topic</option><option>Campaign question</option><option>Account and security</option><option>Entry support</option><option>Other</option></select></label><label className="grid gap-1.5 text-sm font-medium text-[#34523c]">Message<textarea required rows={4} placeholder="Tell us how we can help" className="resize-none rounded-xl border border-[#cfdacf] bg-white p-3 font-normal outline-none focus:border-[#78904d]" /></label><Button type="submit" className="h-12 rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">Send message <ArrowRight data-icon="inline-end" /></Button></form>}</div></div>}
 
-      {authMode && <div className="fixed inset-0 z-40 flex items-end justify-center bg-[#102016]/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-label={authMode === 'sign-in' ? 'Sign in' : 'Create account'}><div className="w-full max-w-md rounded-3xl bg-[#f8f9f7] p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#80953d]">Welcome to aucvia</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[#183c29]">{authMode === 'sign-in' ? 'Sign in to continue' : 'Create your account'}</h2><p className="mt-2 text-sm leading-6 text-[#6a766d]">Save campaigns, reserve slots and keep your entries in one secure place.</p></div><Button variant="ghost" size="icon" onClick={() => setAuthMode(null)} aria-label="Close account dialog"><X /></Button></div><div className="mt-7 grid gap-3"><Button variant="outline" className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><span className="mr-2 flex size-6 items-center justify-center rounded-full bg-[#f5f0e8] text-xs font-bold text-[#4285f4]">G</span>Continue with Google</Button><Button variant="outline" className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><Mail data-icon="inline-start" />Continue with email</Button><Button variant="outline" className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><Smartphone data-icon="inline-start" />Continue with mobile</Button></div><div className="my-6 flex items-center gap-3 text-xs text-[#9aa59b]"><span className="h-px flex-1 bg-[#dce4dc]" />or<span className="h-px flex-1 bg-[#dce4dc]" /></div><Button className="h-12 w-full rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">{authMode === 'sign-in' ? 'Sign in with password' : 'Create with email and password'}</Button><p className="mt-5 text-center text-xs leading-5 text-[#879389]">By continuing, you agree to aucvia&apos;s Terms and Privacy Policy.</p><p className="mt-4 text-center text-sm text-[#68766b]">{authMode === 'sign-in' ? 'New to aucvia?' : 'Already have an account?'} <button className="font-semibold text-[#527124] underline-offset-4 hover:underline" onClick={() => setAuthMode(authMode === 'sign-in' ? 'create' : 'sign-in')}>{authMode === 'sign-in' ? 'Create an account' : 'Sign in'}</button></p></div></div>}
+      {authMode && authStep === 'options' && <div className="fixed inset-0 z-40 flex items-end justify-center bg-[#102016]/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-label={authMode === 'sign-in' ? 'Sign in' : 'Create account'}><div className="w-full max-w-md rounded-3xl bg-[#f8f9f7] p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#80953d]">Welcome to aucvia</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[#183c29]">{authMode === 'sign-in' ? 'Sign in to continue' : 'Create your account'}</h2><p className="mt-2 text-sm leading-6 text-[#6a766d]">Save campaigns, reserve slots and keep your entries in one secure place.</p></div><Button variant="ghost" size="icon" onClick={() => setAuthMode(null)} aria-label="Close account dialog"><X /></Button></div><div className="mt-7 grid gap-3"><Button variant="outline" className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><span className="mr-2 flex size-6 items-center justify-center rounded-full bg-[#f5f0e8] text-xs font-bold text-[#4285f4]">G</span>Continue with Google</Button><Button variant="outline" onClick={startOtp} className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><Mail data-icon="inline-start" />Continue with email</Button><Button variant="outline" onClick={startOtp} className="h-12 rounded-full border-[#cfdacf] bg-white text-[#294a32]"><Smartphone data-icon="inline-start" />Continue with mobile</Button></div><div className="my-6 flex items-center gap-3 text-xs text-[#9aa59b]"><span className="h-px flex-1 bg-[#dce4dc]" />or<span className="h-px flex-1 bg-[#dce4dc]" /></div><Button className="h-12 w-full rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">{authMode === 'sign-in' ? 'Sign in with password' : 'Create with email and password'}</Button><p className="mt-5 text-center text-xs leading-5 text-[#879389]">By continuing, you agree to aucvia&apos;s Terms and Privacy Policy.</p><p className="mt-4 text-center text-sm text-[#68766b]">{authMode === 'sign-in' ? 'New to aucvia?' : 'Already have an account?'} <button className="font-semibold text-[#527124] underline-offset-4 hover:underline" onClick={() => setAuthMode(authMode === 'sign-in' ? 'create' : 'sign-in')}>{authMode === 'sign-in' ? 'Create an account' : 'Sign in'}</button></p></div></div>}
+
+      {authMode && authStep === 'otp' && <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102016]/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-label="Verify account"><div className="w-full max-w-md rounded-3xl bg-[#f8f9f7] p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#80953d]">Secure access</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[#183c29]">Verify your account</h2><p className="mt-2 text-sm leading-6 text-[#6a766d]">Use your email or international phone number to receive a one-time password.</p></div><Button variant="ghost" size="icon" onClick={() => setAuthMode(null)} aria-label="Close OTP dialog"><X /></Button></div><form className="mt-7 grid gap-4" onSubmit={otpSent ? verifyOtp : sendOtp}><label className="grid gap-1.5 text-sm font-medium text-[#34523c]">Email or phone number<input required value={otpIdentifier} onChange={(event) => setOtpIdentifier(event.target.value)} placeholder="you@example.com or +919876543210" className="h-11 rounded-xl border border-[#cfdacf] bg-white px-3 font-normal outline-none focus:border-[#78904d]" /></label>{otpSent && <label className="grid gap-1.5 text-sm font-medium text-[#34523c]">6-digit OTP<input required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} placeholder="000000" className="h-11 rounded-xl border border-[#cfdacf] bg-white px-3 font-normal tracking-[.35em] outline-none focus:border-[#78904d]" /></label>}{otpMessage && <p className="rounded-xl bg-[#eff5ef] p-3 text-sm text-[#34523c]" role="status">{otpMessage}</p>}<Button disabled={otpBusy} className="h-12 rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">{otpBusy ? 'Please wait…' : otpSent ? 'Verify OTP' : 'Send OTP'}</Button>{otpSent && <button type="button" onClick={() => { setOtpSent(false); setOtp(''); setOtpMessage('') }} className="text-sm font-medium text-[#547331]">Use a different number</button>}</form></div></div>}
 
       {selected && <div className="fixed inset-0 z-30 flex items-end justify-center bg-[#102016]/50 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-label="Join property campaign"><div className="w-full max-w-lg rounded-3xl bg-[#f8f9f7] p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#80953d]">Campaign preview</p><h3 className="mt-2 text-2xl font-semibold tracking-tight text-[#183c29]">{selected.title}</h3><p className="mt-1 flex items-center gap-1.5 text-sm text-[#6a766d]"><MapPin className="size-3.5" />{selected.location}</p></div><Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label="Close"><X /></Button></div><div className="my-6 grid grid-cols-3 divide-x divide-[#dce4dc] rounded-2xl border border-[#dce4dc] bg-white py-4"><Metric label="Campaign cap" value={selected.campaign} /><Metric label="Slot price" value="₹1" /></div><div className="rounded-2xl bg-[#eff5ef] p-4 text-sm leading-6 text-[#536258]"><div className="flex gap-2"><CircleHelp className="mt-1 size-4 shrink-0 text-[#78923d]" />This is a prototype interaction. No payment is collected and no real property rights are created.</div></div><Button onClick={() => setJoined(true)} className="mt-5 h-12 w-full rounded-full bg-[#183c29] text-white hover:bg-[#28563b]">{joined ? 'Demo slot reserved' : 'Reserve a demo slot'}</Button></div></div>}
     </main>
